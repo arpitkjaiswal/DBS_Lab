@@ -1,0 +1,179 @@
+LAB2 240911630
+
+
+1.CREATE TABLE Employee ( EmpNo INT PRIMARY KEY, EmpName VARCHAR(100) NOT NULL, Gender CHAR(1) NOT NULL CHECK (Gender IN ('M', 'F')), Salary DECIMAL(10,2) NOT NULL, Address VARCHAR(255) NOT NULL, DNo INT );
+
+
+2.create table department ( DeptNo int primary key, DeptName Varchar(100) unique, Location varchar(100));
+
+3. Alter table Employee add CONSTRAINTS fK_department foreign key(DNo) references Department(DeptNo);
+
+
+4.INSERT INTO Department (DeptNo, DeptName, Location)
+VALUES (1, 'HR', 'Mumbai');
+
+INSERT INTO Department (DeptNo, DeptName, Location)
+VALUES (2, 'IT', 'Bangalore');
+
+INSERT INTO Department (DeptNo, DeptName, Location)
+VALUES (3, 'Finance', 'Delhi');
+
+
+INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo) VALUES (101, 'Ravi Kumar', 'M', 50000, 'Udupi', 2); INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo) VALUES (102, 'Meena Sharma', 'F', 60000, 'Mangalore', 1); INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo) VALUES (103, 'Arjun Singh', 'M', 55000, 'Udupi', 3); INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo) VALUES (104, 'Priya Nair', 'F', 65000, 'Chennai', 2);
+
+
+
+
+5.INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo)
+VALUES (201, NULL, 'M', 40000, 'Delhi', 1);
+
+
+INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo)
+VALUES (202, 'Sneha', 'X', 45000, 'Mumbai', 2);
+
+
+INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo)
+VALUES (203, 'Karan', 'M', 50000, 'Chennai', 99);
+
+
+
+INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo)
+VALUES (101, 'Duplicate Ravi', 'M', 60000, 'Delhi', 2);
+
+6.DELETE FROM Employee
+WHERE DNo = 2;
+
+DELETE FROM Department
+WHERE DeptNo = 2;
+
+
+7.Alter table Employee drop constraint fk_department;
+
+
+
+8.ALTER TABLE Employee
+ADD CONSTRAINT chk_min_salary
+CHECK (Salary >= 10000);
+
+INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo)
+VALUES (301, 'Anita Rao', 'F', 12000, 'Udupi', 1);
+
+
+INSERT INTO Employee (EmpNo, EmpName, Gender, Salary, Address, DNo)
+VALUES (402, 'Vijay Patil', 'M', 8000, 'Mangalore', 2);
+
+
+
+
+
+
+9.SELECT name, dept_name
+FROM Student;
+
+
+
+
+10.SELECT name
+FROM Instructor
+WHERE dept_name = 'CSE';
+
+
+11.SELECT title
+FROM Course
+WHERE dept_name = 'CSE' AND credits = 3;
+
+
+12.SELECT T.course_id, C.title
+FROM Takes T
+JOIN Course C ON T.course_id = C.course_id
+WHERE T.ID = 12345;
+
+
+13.SELECT name, salary
+FROM Instructor
+WHERE salary BETWEEN 40000 AND 90000;
+
+
+14.SELECT I.ID
+FROM Instructor I
+WHERE I.ID NOT IN (
+    SELECT T.ID
+    FROM Teaches T
+);
+
+
+15.SELECT S.name, C.title, Sec.year
+FROM Student S
+JOIN Takes T 
+    ON S.ID = T.ID
+JOIN Section Sec 
+    ON T.course_id = Sec.course_id
+   AND T.sec_id    = Sec.sec_id
+   AND T.semester  = Sec.semester
+   AND T.year      = Sec.year
+JOIN Course C 
+    ON Sec.course_id = C.course_id
+WHERE Sec.room_number = '303';
+
+
+
+
+16.SELECT S.name, T.course_id, C.title AS c_name
+FROM Student S, Takes T, Course C
+WHERE S.ID = T.ID
+  AND T.course_id = C.course_id
+  AND T.year = 2015;
+
+17.SELECT I.name, I.salary AS inst_salary
+FROM Instructor I
+WHERE I.salary > ANY (
+    SELECT salary
+    FROM Instructor
+    WHERE dept_name LIKE '%CSE%'
+);
+
+
+18.SELECT name
+FROM Instructor
+WHERE dept_name LIKE '%ch%';
+
+
+19.SELECT name, LENGTH(name) AS name_length
+FROM Student;
+
+
+20.SELECT dept_name, SUBSTR(dept_name, 3, 3) AS part_name
+FROM Department;
+
+
+21.SELECT UPPER(name) AS upper_name
+FROM Instructor;
+
+
+22.SELECT ID, course_id, NVL(grade, '0') AS grade
+FROM Takes;
+
+
+23.SELECT salary, ROUND(salary/3, -2) AS rounded_salary
+FROM Instructor;
+
+24A)-SELECT EmpNo, EmpName FROM Employee;
+
+UPDATE Employee
+SET DOB = DATE '1990-05-12'
+WHERE EmpNo = 401;
+
+SELECT EmpName, TO_CHAR(DOB, 'DD-MON-YYYY') AS Birth_Date
+FROM Employee;
+
+
+
+24.SELECT EmpName, TO_CHAR(DOB, 'DD-MON-YYYY') FROM Employee;
+SELECT EmpName, TO_CHAR(DOB, 'DD-MON-YY') FROM Employee;
+SELECT EmpName, TO_CHAR(DOB, 'DD-MM-YY') FROM Employee;
+
+
+
+25.SELECT EmpName, TO_CHAR(DOB, 'YEAR') FROM Employee;
+SELECT EmpName, INITCAP(TO_CHAR(DOB, 'YEAR')) FROM Employee;
+SELECT EmpName, LOWER(TO_CHAR(DOB, 'YEAR')) FROM Employee;
