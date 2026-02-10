@@ -1,0 +1,30 @@
+select course_id from Section where semester ='Fall' and year=2009
+union all
+select course_id from Section where semester='Spring' and year=2010;
+
+select course_id from Section where semester ='Fall' and year=2009
+intersect
+select course_id from Section where semester='Spring' and year=2010;
+
+Select course_id from Section where semester='Fall' and year = 2009
+MINUS
+Select course_id from Section where semester='Spring' and year=2010;
+
+
+select c.course_id from 
+Course c where NOT EXISTs
+(Select 1  from Takes t
+where t.course_id=c.course_id);
+
+//OR 
+SELECT course_id
+FROM Course
+WHERE course_id NOT IN (
+    SELECT course_id
+    FROM Takes
+    WHERE course_id IS NOT NULL
+);
+
+select course_id from Section where semester='Fall' and year=2009
+AND course_id 
+IN( select course_id from Section where semester='Spring' and year=2010);
