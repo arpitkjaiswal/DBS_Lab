@@ -1,0 +1,224 @@
+
+CREATE TABLE StudentTable (
+    RollNo NUMBER PRIMARY KEY,
+    GPA NUMBER(3,1)
+);
+
+
+INSERT INTO StudentTable VALUES (1, 5.8);
+INSERT INTO StudentTable VALUES (2, 6.5);
+INSERT INTO StudentTable VALUES (3, 3.4);
+INSERT INTO StudentTable VALUES (4, 7.8);
+INSERT INTO StudentTable VALUES (5, 9.5);
+COMMIT;
+
+
+
+1)DECLARE
+    v_rollno NUMBER := &RollNo;
+    v_gpa NUMBER;
+BEGIN
+    SELECT GPA INTO v_gpa
+    FROM StudentTable
+    WHERE RollNo = v_rollno;
+
+    IF v_gpa IS NOT NULL THEN
+        DBMS_OUTPUT.PUT_LINE('GPA: ' || v_gpa);
+    END IF;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Student not found');
+END;
+/
+
+
+2)DECLARE
+    v_rollno NUMBER := &RollNo;
+    v_gpa NUMBER;
+    v_grade VARCHAR2(2);
+BEGIN
+    SELECT GPA INTO v_gpa
+    FROM StudentTable
+    WHERE RollNo = v_rollno;
+
+    IF v_gpa < 4 THEN
+        v_grade := 'F';
+    ELSIF v_gpa < 5 THEN
+        v_grade := 'E';
+    ELSIF v_gpa < 6 THEN
+        v_grade := 'D';
+    ELSIF v_gpa < 7 THEN
+        v_grade := 'C';
+    ELSIF v_gpa < 8 THEN
+        v_grade := 'B';
+    ELSIF v_gpa < 9 THEN
+        v_grade := 'A';
+    ELSE
+        v_grade := 'A+';
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('Grade: ' || v_grade);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Student not found');
+END;
+/
+
+
+3)DECLARE
+    v_issue DATE := TO_DATE('&IssueDate','DD-MM-YYYY');
+    v_return DATE := TO_DATE('&ReturnDate','DD-MM-YYYY');
+    v_days NUMBER;
+    v_fine NUMBER := 0;
+BEGIN
+    v_days := v_return - v_issue;
+
+    IF v_days <= 7 THEN
+        v_fine := 0;
+    ELSIF v_days <= 15 THEN
+        v_fine := v_days * 1;
+    ELSIF v_days <= 30 THEN
+        v_fine := v_days * 2;
+    ELSE
+        v_fine := v_days * 5;
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('Late Days: ' || v_days);
+    DBMS_OUTPUT.PUT_LINE('Fine: Rs. ' || v_fine);
+END;
+/
+
+
+4)DECLARE
+    v_rollno NUMBER := 1;
+    v_gpa NUMBER;
+    v_grade VARCHAR2(2);
+BEGIN
+    LOOP
+        EXIT WHEN v_rollno > 5;
+
+        SELECT GPA INTO v_gpa
+        FROM StudentTable
+        WHERE RollNo = v_rollno;
+
+        IF v_gpa < 4 THEN v_grade := 'F';
+        ELSIF v_gpa < 5 THEN v_grade := 'E';
+        ELSIF v_gpa < 6 THEN v_grade := 'D';
+        ELSIF v_gpa < 7 THEN v_grade := 'C';
+        ELSIF v_gpa < 8 THEN v_grade := 'B';
+        ELSIF v_gpa < 9 THEN v_grade := 'A';
+        ELSE v_grade := 'A+';
+        END IF;
+
+        DBMS_OUTPUT.PUT_LINE('RollNo: ' || v_rollno || ' Grade: ' || v_grade);
+
+        v_rollno := v_rollno + 1;
+    END LOOP;
+END;
+/
+
+5)ALTER TABLE StudentTable ADD LetterGrade VARCHAR2(2);
+DECLARE
+    v_rollno NUMBER := 1;
+    v_gpa NUMBER;
+    v_grade VARCHAR2(2);
+BEGIN
+    WHILE v_rollno <= 5 LOOP
+
+        SELECT GPA INTO v_gpa
+        FROM StudentTable
+        WHERE RollNo = v_rollno;
+
+        IF v_gpa < 4 THEN v_grade := 'F';
+        ELSIF v_gpa < 5 THEN v_grade := 'E';
+        ELSIF v_gpa < 6 THEN v_grade := 'D';
+        ELSIF v_gpa < 7 THEN v_grade := 'C';
+        ELSIF v_gpa < 8 THEN v_grade := 'B';
+        ELSIF v_gpa < 9 THEN v_grade := 'A';
+        ELSE v_grade := 'A+';
+        END IF;
+
+        UPDATE StudentTable
+        SET LetterGrade = v_grade
+        WHERE RollNo = v_rollno;
+
+        v_rollno := v_rollno + 1;
+    END LOOP;
+
+    COMMIT;
+END;
+/
+
+
+6)DECLARE
+    v_max_gpa NUMBER := 0;
+    v_roll NUMBER;
+BEGIN
+    FOR rec IN (SELECT RollNo, GPA FROM StudentTable) LOOP
+        IF rec.GPA > v_max_gpa THEN
+            v_max_gpa := rec.GPA;
+            v_roll := rec.RollNo;
+        END IF;
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('Topper RollNo: ' || v_roll);
+    DBMS_OUTPUT.PUT_LINE('Max GPA: ' || v_max_gpa);
+END;
+/
+
+7)DECLARE
+    v_rollno NUMBER := 1;
+    v_gpa NUMBER;
+    v_grade VARCHAR2(2);
+BEGIN
+<<start>>
+    IF v_rollno > 5 THEN
+        GOTO finish;
+    END IF;
+
+    SELECT GPA INTO v_gpa
+    FROM StudentTable
+    WHERE RollNo = v_rollno;
+
+    IF v_gpa < 4 THEN v_grade := 'F';
+    ELSIF v_gpa < 5 THEN v_grade := 'E';
+    ELSIF v_gpa < 6 THEN v_grade := 'D';
+    ELSIF v_gpa < 7 THEN v_grade := 'C';
+    ELSIF v_gpa < 8 THEN v_grade := 'B';
+    ELSIF v_gpa < 9 THEN v_grade := 'A';
+    ELSE v_grade := 'A+';
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('RollNo: ' || v_rollno || ' Grade: ' || v_grade);
+
+    v_rollno := v_rollno + 1;
+    GOTO start;
+
+<<finish>>
+    NULL;
+END;
+/
+
+8)DECLARE
+    v_name VARCHAR2(50) := '&InstructorName';
+    v_id Instructor.ID%TYPE;
+    v_dept Instructor.Dept_Name%TYPE;
+BEGIN
+    SELECT ID, Dept_Name
+    INTO v_id, v_dept
+    FROM Instructor
+    WHERE Name = v_name;
+
+    DBMS_OUTPUT.PUT_LINE('ID: ' || v_id);
+    DBMS_OUTPUT.PUT_LINE('Department: ' || v_dept);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No instructor found');
+
+    WHEN TOO_MANY_ROWS THEN
+        DBMS_OUTPUT.PUT_LINE('Multiple instructors found');
+END;
+/

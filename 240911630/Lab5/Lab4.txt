@@ -1,0 +1,99 @@
+1. Birth date and address of employee named 'John B. Smith'
+SELECT Bdate, Address
+FROM Employee
+WHERE Fname = 'John' AND Minit = 'B' AND Lname = 'Smith';
+
+Name and address of employees in 'Research' department
+SELECT Fname, Lname, Address
+FROM Employee e
+JOIN Department d ON e.Dno = d.Dnumber
+WHERE d.Dname = 'Research';
+
+2. Projects in 'Stanford' with dept info and manager details
+SELECT p.Pnumber, p.Dnum, e.Lname, e.Address, e.Bdate
+FROM Project p
+JOIN Department d ON p.Dnum = d.Dnumber
+JOIN Employee e ON d.Mgr_ssn = e.Ssn
+WHERE p.Plocation = 'Stanford';
+
+ 3. Employee and their immediate supervisor
+SELECT e.Fname, e.Lname, s.Fname AS Sup_Fname, s.Lname AS Sup_Lname
+FROM Employee e
+LEFT JOIN Employee s ON e.Super_ssn = s.Ssn;
+
+ 4. Project numbers involving employees named 'Smith'
+SELECT DISTINCT p.Pnumber
+FROM Project p
+JOIN Works_On w ON p.Pnumber = w.Pno
+JOIN Employee e ON w.Essn = e.Ssn
+WHERE e.Lname = 'Smith'
+   OR p.Dnum IN (
+       SELECT d.Dnumber
+       FROM Department d
+       JOIN Employee m ON d.Mgr_ssn = m.Ssn
+       WHERE m.Lname = 'Smith'
+   );
+
+ 5. Salaries with 10% raise for employees on 'ProductX'
+SELECT e.Fname, e.Lname, e.Salary * 1.10 AS New_Salary
+FROM Employee e
+JOIN Works_On w ON e.Ssn = w.Essn
+JOIN Project p ON w.Pno = p.Pnumber
+WHERE p.Pname = 'ProductX';
+
+6. Employees and projects ordered by dept, last name, first name
+SELECT d.Dname, e.Lname, e.Fname, p.Pname
+FROM Employee e
+JOIN Department d ON e.Dno = d.Dnumber
+JOIN Works_On w ON e.Ssn = w.Essn
+JOIN Project p ON w.Pno = p.Pnumber
+ORDER BY d.Dname, e.Lname, e.Fname;
+
+ 7. Employees with dependent same name and sex
+SELECT e.Fname, e.Lname
+FROM Employee e
+JOIN Dependent d ON e.Ssn = d.Essn
+WHERE e.Fname = d.Dependent_name AND e.Sex = d.Sex;
+
+ 8. Employees with no dependents
+SELECT e.Fname, e.Lname
+FROM Employee e
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Dependent d
+    WHERE d.Essn = e.Ssn
+);
+
+9. Managers with at least one dependent
+SELECT DISTINCT e.Fname, e.Lname
+FROM Employee e
+JOIN Department d ON e.Ssn = d.Mgr_ssn
+JOIN Dependent dep ON e.Ssn = dep.Essn;
+
+ 10. Salary aggregates
+SELECT SUM(Salary) AS Total_Salary,
+       MAX(Salary) AS Max_Salary,
+       MIN(Salary) AS Min_Salary,
+       AVG(Salary) AS Avg_Salary
+FROM Employee;
+
+11. Project number, name, and employee count
+SELECT p.Pnumber, p.Pname, COUNT(w.Essn) AS Num_Employees
+FROM Project p
+LEFT JOIN Works_On w ON p.Pnumber = w.Pno
+GROUP BY p.Pnumber, p.Pname;
+
+ 12. Projects with more than 2 employees
+SELECT p.Pnumber, p.Pname, COUNT(w.Essn) AS Num_Employees
+FROM Project p
+JOIN Works_On w ON p.Pnumber = w.Pno
+GROUP BY p.Pnumber, p.Pname
+HAVING COUNT(w.Essn) > 2;
+
+ 13. Departments with >5 employees and count of those earning >40,000
+SELECT d.Dnumber, COUNT(e.Ssn) AS Num_High_Salary
+FROM Department d
+JOIN Employee e ON d.Dnumber = e.Dno
+WHERE e.Salary > 40000
+GROUP BY d.Dnumber
+HAVING COUNT(e.Ssn) > 5;

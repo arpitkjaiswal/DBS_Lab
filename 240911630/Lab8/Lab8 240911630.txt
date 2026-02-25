@@ -1,0 +1,197 @@
+Lab8 240911630
+
+1)DECLARE
+  v_dept_no Instructor.dept_name%TYPE := 'Comp. Sci.'; -- change to required dept identifier
+  CURSOR c IS
+    SELECT ID, salary
+    FROM Instructor
+    WHERE dept_name = v_dept_no
+    FOR UPDATE OF salary;
+  v_raise_amt Instructor.salary%TYPE;
+BEGIN
+  FOR rec IN c LOOP
+    v_raise_amt := rec.salary * 0.05;
+    UPDATE Instructor
+    SET salary = salary + v_raise_amt
+    WHERE CURRENT OF c;
+
+    INSERT INTO salary_raise(Instructor_Id, Raise_date, Raise_amt)
+    VALUES (rec.ID, SYSDATE, v_raise_amt);
+  END LOOP;
+
+  COMMIT;
+END;
+/
+
+2)DECLARE
+  CURSOR c IS
+    SELECT ID, name, dept_name, tot_cred
+    FROM Student
+    ORDER BY tot_cred ASC;
+  v_count NUMBER := 0;
+BEGIN
+  FOR s IN c LOOP
+    EXIT WHEN v_count = 10;
+    DBMS_OUTPUT.PUT_LINE('ID: ' || s.ID || ' Name: ' || s.name ||
+                         ' Dept: ' || s.dept_name || ' Credits: ' || s.tot_cred);
+    v_count := v_count + 1;
+  END LOOP;
+END;
+/
+
+3)DECLARE
+  CURSOR c IS
+    SELECT c.course_id,
+           c.title,
+           c.dept_name,
+           c.credits,
+           NVL(i.name, 'N/A') AS instructor_name,
+           c.building,
+           c.room_number,
+           c.time_slot_id,
+           COUNT(t.ID) AS tot_student_no
+    FROM Course c
+    LEFT JOIN Teaches th ON c.course_id = th.course_id
+    LEFT JOIN Instructor i ON th.ID = i.ID
+    LEFT JOIN Takes t ON c.course_id = t.course_id
+    GROUP BY c.course_id, c.title, c.dept_name, c.credits,
+             i.name, c.building, c.room_number, c.time_slot_id
+    ORDER BY c.course_id;
+BEGIN
+  FOR rec IN c LOOP
+    DBMS_OUTPUT.PUT_LINE('Course: ' || rec.course_id ||
+                         ' Title: ' || rec.title ||
+                         ' Dept: ' || rec.dept_name ||
+                         ' Credits: ' || rec.credits ||
+                         ' Instructor: ' || rec.instructor_name ||
+                         ' Building: ' || rec.building ||
+                         ' Room: ' || rec.room_number ||
+                         ' TimeSlot: ' || rec.time_slot_id ||
+                         ' Students: ' || rec.tot_student_no);
+  END LOOP;
+END;
+/
+
+4)DECLARE
+  CURSOR c IS
+    SELECT s.ID
+    FROM Student s
+    JOIN Takes t ON s.ID = t.ID
+    WHERE t.course_id = 'CS101' AND s.tot_cred < 30;
+BEGIN
+  FOR rec IN c LOOP
+    DELETE FROM Takes
+    WHERE ID = rec.ID AND course_id = 'CS101';
+    DBMS_OUTPUT.PUT_LINE('Deregistered student ID: ' || rec.ID);
+  END LOOP;
+
+  COMMIT;
+END;
+/
+
+5)BEGIN
+  -- Reset all LetterGrade values to 'F'
+  UPDATE Student SET LetterGrade = 'F';
+  COMMIT;
+END;
+/
+
+DECLARE
+  CURSOR c IS
+    SELECT ID, GPA
+    FROM Student
+    FOR UPDATE OF LetterGrade;
+BEGIN
+  OPEN c;
+  LOOP
+    FETCH c INTO v_id, v_gpa;
+    EXIT WHEN c%NOTFOUND;
+
+    UPDATE Student
+    SET LetterGrade =
+      CASE
+        WHEN v_gpa >= 3.5 THEN 'A'
+        WHEN v_gpa >= 3.0 THEN 'B'
+        WHEN v_gpa >= 2.0 THEN 'C'
+        WHEN v_gpa >= 1.0 THEN 'D'
+        ELSE 'F'
+      END
+    WHERE CURRENT OF c;
+  END LOOP;
+  CLOSE c;
+  COMMIT;
+END;
+/
+
+
+
+DECLARE
+  v_id   Student.ID%TYPE;
+  v_gpa  Student.GPA%TYPE;
+  CURSOR c IS
+    SELECT ID, GPA
+    FROM Student
+    FOR UPDATE OF LetterGrade;
+BEGIN
+  -- reset
+  UPDATE Student SET LetterGrade = 'F';
+  COMMIT;
+
+  OPEN c;
+  LOOP
+    FETCH c INTO v_id, v_gpa;
+    EXIT WHEN c%NOTFOUND;
+
+    UPDATE Student
+    SET LetterGrade =
+      CASE
+        WHEN v_gpa >= 3.5 THEN 'A'
+        WHEN v_gpa >= 3.0 THEN 'B'
+        WHEN v_gpa >= 2.0 THEN 'C'
+        WHEN v_gpa >= 1.0 THEN 'D'
+        ELSE 'F'
+      END
+    WHERE CURRENT OF c;
+  END LOOP;
+  CLOSE c;
+  COMMIT;
+END;
+/
+
+
+6)DECLARE
+  CURSOR c(p_course_id Course.course_id%TYPE) IS
+    SELECT i.ID, i.name, i.dept_name, i.salary
+    FROM Instructor i
+    JOIN Teaches t ON i.ID = t.ID
+    WHERE t.course_id = p_course_id;
+BEGIN
+  FOR inst IN c('CS101') LOOP  -- change 'CS101' to desired course id or replace with a variable
+    DBMS_OUTPUT.PUT_LINE('Instructor ID: ' || inst.ID ||
+                         ' Name: ' || inst.name ||
+                         ' Dept: ' || inst.dept_name ||
+                         ' Salary: ' || inst.salary);
+  END LOOP;
+END;
+/
+
+7)DECLARE
+  CURSOR c IS
+    SELECT s.ID AS student_id,
+           s.name AS student_name,
+           s.dept_name,
+           t.course_id
+    FROM Student s
+    JOIN Advisor a ON s.ID = a.s_ID
+    JOIN Teaches t ON a.i_ID = t.ID
+    JOIN Takes tk ON tk.ID = s.ID AND tk.course_id = t.course_id
+    ORDER BY s.ID, t.course_id;
+BEGIN
+  FOR rec IN c LOOP
+    DBMS_OUTPUT.PUT_LINE('Student ID: ' || rec.student_id ||
+                         ' Name: ' || rec.student_name ||
+                         ' Dept: ' || rec.dept_name ||
+                         ' Course: ' || rec.course_id);
+  END LOOP;
+END;
+/
